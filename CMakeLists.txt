@@ -14,7 +14,7 @@ set(PROJ_VERSION 0.0.1)
 option(BUILD_YP_TEST "Build yplanner's Test" OFF)
 
 
-
+add_subdirectory(thirdparty)
 add_subdirectory(include)
 add_subdirectory(src)
 add_subdirectory(test)
