@@ -16,4 +16,6 @@ endfunction()
 
 declare_test(costmap)
 
+declare_test(planner)
+
 

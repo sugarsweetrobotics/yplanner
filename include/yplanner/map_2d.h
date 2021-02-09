@@ -29,7 +29,7 @@ namespace ssr {
     public:
       MapConfig2D config;
       std::vector<int8_t> cells;
-
+      int8_t dmy;
       /**
        *
        */
@@ -38,7 +38,12 @@ namespace ssr {
       /**
        *
        */
-      OccupancyGridMap2D(MapConfig2D&& c, std::vector<int8_t>&& cs): config(c), cells(cs) {}      
+      OccupancyGridMap2D(MapConfig2D&& c, std::vector<int8_t>&& cs): config(c), cells(cs) {}   
+
+      int8_t& cell(const GridPoint2D& point);
+      int8_t& cell(const int64_t x, const int64_t y);
+      int8_t cell(const GridPoint2D& point) const;
+      int8_t cell(const int64_t x, const int64_t y) const;
     };
 
     using OccupancyGridMap2D_ptr = std::shared_ptr<OccupancyGridMap2D>;
@@ -46,28 +51,60 @@ namespace ssr {
     /**
      * Create Map Object 
      */
-    OccupancyGridMap2D_ptr createMap(const Pose2D& topLeft, const Size2D& mapSize, const Size2D& sizeOfGrid) {
-      const uint32_t w = mapSize.width / sizeOfGrid.width;
-      const uint32_t h = mapSize.height / sizeOfGrid.height;
-      auto m = std::make_shared<OccupancyGridMap2D>(MapConfig2D{topLeft, sizeOfGrid, {w, h}}, std::vector<int8_t>(static_cast<std::vector<int8_t>::size_type>(w*h)));
-      for(auto i = 0;i < w*h;i++) {
-	m->cells[i] = OccupancyGridMap2D::UNKNOWN_STATE;
-      }
-      return m;
-    }
+    OccupancyGridMap2D_ptr createMap(const Pose2D& topLeft, const GridSize2D& mapGridSize, const Size2D& sizeOfGrid);
 
     /**
      * Convert Grid Pose ([pixel, rad]) in a map to World Pose [m, rad]
      * This function returns the pose in world coord of the center of the grid defined by gridPose (x, y, theta)
      */
-    inline Point2D gridPoseToWorldPose(const MapConfig2D& mapConfig, const GridPoint2D& gridPose) {
-      const double x = (gridPose.x+0.5) * mapConfig.gridSize.width;
-      const double y = -(gridPose.y+0.5) * mapConfig.gridSize.height;
-      const double sin_a = sin(mapConfig.poseOfTopLeft.a);
-      const double cos_a = cos(mapConfig.poseOfTopLeft.a);
-      return {mapConfig.poseOfTopLeft.position.x + x * cos_a - y * sin_a,
-	mapConfig.poseOfTopLeft.position.y + x * sin_a + y * cos_a};
+    Point2D gridToWorld(const MapConfig2D& mapConfig, const GridPoint2D& gridPose);
+
+    GridPoint2D worldToGrid(const MapConfig2D& mapConfig, const Point2D& point);
+
+    inline int mapIndex(const MapConfig2D& config, const int x, const int y) {
+        return x + y * config.cellsSize.width;
     }
+
+    void forEachCells(const OccupancyGridMap2D_ptr& map, const std::function<void(int8_t& cell, const int index)>& f);
+
+    bool isValidPoint(const MapConfig2D& mapConfig, const GridPoint2D& point);
+
+    bool isFree(const OccupancyGridMap2D_ptr& map, const GridPoint2D& point);
+
+    bool isOccupied(const OccupancyGridMap2D_ptr& map, const GridPoint2D& point);
+
+    bool saveMapAsASCII(const OccupancyGridMap2D_ptr& map, const std::string& fileName);
     
+
+
+    inline int8_t&  OccupancyGridMap2D::cell(const GridPoint2D& point) {
+      if (!isValidPoint(config, point)) {
+        return dmy;
+      } 
+      return cells[point.x + point.y * config.cellsSize.width];
+    }
+
+    inline int8_t& OccupancyGridMap2D::cell(const int64_t x, const int64_t y) {
+      if (x < 0 || x >= config.cellsSize.width || y < 0 || y >= config.cellsSize.height) {
+        return dmy;
+      }
+      return cells[x + y * config.cellsSize.width];
+    }
+
+    inline int8_t OccupancyGridMap2D::cell(const GridPoint2D& point) const {
+      if (!isValidPoint(config, point)) {
+        return dmy;
+      } 
+      return cells[point.x + point.y * config.cellsSize.width];
+    }
+
+    inline int8_t OccupancyGridMap2D::cell(const int64_t x, const int64_t y) const {
+      if (x < 0 || x >= config.cellsSize.width || y < 0 || y >= config.cellsSize.height) {
+        return dmy;
+      }
+      return cells[x + y * config.cellsSize.width];
+    }
+
+
   }
 }
