@@ -48,6 +48,17 @@ namespace ssr {
       Pose2D(double _x=0, double _y=0, double _a=0): position(_x, _y), a(_a) {}
       Pose2D(const Point2D& pos, double _a): position(pos), a(_a) {}
     };
+
+    struct Velocity2D {
+    public:
+      double vx;
+      double vy;
+      double va;
+
+      Velocity2D(): vx(0), vy(0), va(0) {}
+      Velocity2D(const double x, const double y, const double a): vx(x), vy(y), va(a) {}
+
+    };
     
     struct GridSize2D {
     public:
@@ -94,9 +105,12 @@ namespace ssr {
       GridPose2D(const GridPoint2D& pos, double _a): position(pos), a(_a) {}
     };
 
-    inline double manhattanDistance(const GridPoint2D& start, const GridPoint2D& stop) {
-      auto v = start - stop;
-      return fabs(v.v[0]) + fabs(v.v[1]);
-    }
+    struct RobotGeometry {
+      float robotRadius;
+
+      float getRobotRadius() { return robotRadius; }
+    };
+
+
   }
 }

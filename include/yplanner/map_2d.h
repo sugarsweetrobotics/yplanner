@@ -106,5 +106,10 @@ namespace ssr {
     }
 
 
+
+        OccupancyGridMap2D_ptr dilate(const OccupancyGridMap2D_ptr& map);
+
+        OccupancyGridMap2D_ptr dilate(const OccupancyGridMap2D_ptr& map, const int iteration);
+
   }
 }

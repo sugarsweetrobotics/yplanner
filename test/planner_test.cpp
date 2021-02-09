@@ -15,7 +15,7 @@ using namespace ssr;
 using namespace Catch::literals;
 
 
-SCENARIO( "Map test", "[constmap]" ) {
+SCENARIO( "Planning Test", "[planner]" ) {
 
 
   GIVEN("MapConfiguration by code with 2x2 map") {
@@ -141,7 +141,32 @@ SCENARIO( "Map test", "[constmap]" ) {
       REQUIRE(plan.paths.size() > 0);
       saveMapAndPathAsASCII(map, plan.paths[0], "result10x10_with01.pcm");
     }
+
+    THEN("Do Plan with robot 0.1 radius 4Dir") {
+      ssr::yplanner::PlannerConfig config{
+          {0.25, 0.75, 0}, {0.75, 0.75, 0}, {0.1}
+      };
+      config.method = ssr::yplanner::PlannerConfig::PLANNING_ASTAR_4DIR;
+      auto plan = ssr::yplanner::planPath(map, config);
+      REQUIRE(plan.status == ssr::yplanner::Plan::PLAN_OK);
+      REQUIRE(plan.paths.size() > 0);
+      saveMapAndPathAsASCII(map, plan.paths[0], "result10x10_with01_4dir.pcm");
+    }
+
   }
 
+  GIVEN("Path simplification") {
+    ssr::yplanner::Path2D path{
+      {{0, 0}, 0.1}, {{5, 5},0.1}, {{10, 10}, 0.1}
+    };
+
+    REQUIRE(path.waypoints.size() == 3);
+
+    THEN("Simplify Path") {
+      auto p2 = ssr::yplanner::simplifyPath(path, {});
+
+      REQUIRE(p2.waypoints.size() == 2);
+    }
+  }
 
 }

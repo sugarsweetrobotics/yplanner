@@ -75,6 +75,47 @@ namespace ssr {
         }
     }
 
+
+
+    OccupancyGridMap2D_ptr dilate(const OccupancyGridMap2D_ptr& map) {
+        auto expMap = createMap(map->config.poseOfTopLeft, map->config.cellsSize, map->config.gridSize);
+        for(int h = 0;h < map->config.cellsSize.height;h++) {
+            for(int w = 0;w < map->config.cellsSize.width;w++) {
+                if (map->cell(w, h) == OccupancyGridMap2D::OCCUPIED_STATE) {
+                    expMap->cell(w-1, h-1) = OccupancyGridMap2D::OCCUPIED_STATE;
+                    expMap->cell(w-1, h) = OccupancyGridMap2D::OCCUPIED_STATE;
+                    expMap->cell(w-1, h+1) = OccupancyGridMap2D::OCCUPIED_STATE;
+
+                    expMap->cell(w, h-1) = OccupancyGridMap2D::OCCUPIED_STATE;
+                    expMap->cell(w, h) = OccupancyGridMap2D::OCCUPIED_STATE;
+                    expMap->cell(w, h+1) = OccupancyGridMap2D::OCCUPIED_STATE;
+
+                    expMap->cell(w+1, h-1) = OccupancyGridMap2D::OCCUPIED_STATE;
+                    expMap->cell(w+1, h) = OccupancyGridMap2D::OCCUPIED_STATE;
+                    expMap->cell(w+1, h+1) = OccupancyGridMap2D::OCCUPIED_STATE;
+                } else {
+                    if (expMap->cell(w, h) != OccupancyGridMap2D::OCCUPIED_STATE) {
+                        expMap->cell(w, h) = map->cell(w, h);
+                    }
+                }
+            }
+        }
+        return expMap;
+    }
+
+
+    OccupancyGridMap2D_ptr dilate(const OccupancyGridMap2D_ptr& map, const int iteration) {
+        if (iteration < 1) { return map; }
+
+        OccupancyGridMap2D_ptr eMap = dilate(map);
+        for(int i = 0;i < iteration-1;i++) {
+            eMap = dilate(eMap);
+        }
+        return eMap;
+    }
+
+    
+
     bool saveMapAsASCII(const OccupancyGridMap2D_ptr& map, const std::string& fileName) {
         std::ofstream fout(fileName);
         fout << "P2" << std::endl;
