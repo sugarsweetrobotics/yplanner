@@ -20,6 +20,14 @@ namespace ssr {
       Vector2D(const double x, const double y) : v{x, y} {}
     };
 
+    struct Vector3D {
+    public:
+      double v[3];
+
+      Vector3D(): v{0,0,0} {}
+      Vector3D(const double x, const double y, const double z) : v{x, y, z} {}
+    };
+
     inline double norm(const Vector2D& v) {
       return sqrt(v.v[0]*v.v[0] + v.v[1]*v.v[1]);
     }
@@ -48,6 +56,14 @@ namespace ssr {
       Pose2D(double _x=0, double _y=0, double _a=0): position(_x, _y), a(_a) {}
       Pose2D(const Point2D& pos, double _a): position(pos), a(_a) {}
     };
+
+    inline Vector3D operator-(const Pose2D& x0, const Pose2D& x1) {
+      return {
+        x0.position.x - x1.position.x,
+        x0.position.y - x1.position.y,
+        x0.a - x1.a
+      };
+    }
 
     struct Velocity2D {
     public:
@@ -111,6 +127,24 @@ namespace ssr {
       float getRobotRadius() { return robotRadius; }
     };
 
+    struct Line2D {
+      Point2D x0;
+      Point2D x1;
 
+      Line2D(const Point2D& x0, const Point2D& x1): x0(x0), x1(x1) {}
+    };
+
+    inline double distance(const Line2D& line, const Point2D point) {
+      if (line.x0.x == line.x1.x) {
+        return fabs(point.x - line.x0.x);
+      } else if (line.x0.y == line.x1.y) {
+        return fabs(point.y - line.x0.y);
+      } 
+
+      double a = (line.x0.y-line.x1.y)/(line.x0.x-line.x1.x);
+      double b = line.x0.y - a * line.x0.x; 
+
+      return fabs(point.y - a * point.x - b) / sqrt(1 + a*a);
+    }
   }
 }

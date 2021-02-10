@@ -11,7 +11,15 @@
 namespace ssr {
   namespace yplanner {
     struct PathFilterConfig {
+      enum LINE_SIMPLIFICATION_METHODS {
+        LINE_SIMPLER_NONE,
+        LINE_SIMPLER_LANG,
+      };
 
+      LINE_SIMPLIFICATION_METHODS method;
+      double distanceTolerance;
+
+      PathFilterConfig() : method(LINE_SIMPLER_LANG) {}
     };
 
     /**

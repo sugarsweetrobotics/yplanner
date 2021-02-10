@@ -18,7 +18,43 @@ namespace ssr {
             return {plan.status, plan.costMap, {simplifyPath(plan.paths[0], config.pathFilterConfig)}};
         }
 
+
+        Path2D simplifyPathLangMethod(const Path2D& path, const PathFilterConfig& config) {
+            Path2D newPath;
+
+            double distanceTolerance = config.distanceTolerance;
+
+            newPath.waypoints.push_back(path.waypoints[0]);
+            auto beginPoint = path.waypoints[0];
+
+            std::vector<Waypoint2D> skipPoints;
+            for(int i = 1;i < path.waypoints.size()-1;i++) {
+                skipPoints.push_back(path.waypoints[i]);
+                const auto endPoint = path.waypoints[i+1];
+                const Line2D line{endPoint.pose.position, beginPoint.pose.position};
+                bool skippable = true;
+                for(auto skipPoint : skipPoints) {
+                    if (distance(line, skipPoint.pose.position) > distanceTolerance) {
+                        skippable = false;
+                        break;
+                    }
+                }
+                if (!skippable) {
+                    newPath.waypoints.push_back(path.waypoints[i]);
+                    beginPoint = path.waypoints[i];
+                    skipPoints.clear();
+                }                
+            }
+            newPath.waypoints.push_back(path.waypoints[path.waypoints.size()-1]);
+
+            return newPath;
+        }
+
         Path2D simplifyPath(const Path2D& path, const PathFilterConfig& config) {
+            if (config.method == PathFilterConfig::LINE_SIMPLIFICATION_METHODS) {
+                return simplifyPathLangMethod(path, config);
+            }
+
             return path;
         }
 
